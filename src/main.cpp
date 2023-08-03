@@ -8,8 +8,6 @@
 #include <string>
 #include <thread>
 
-#include "network_creator.h"
-#include "node.h"
 #include "plotter.h"
 
 std::function<float(float)> getFunction(std::string text){

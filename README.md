@@ -34,13 +34,13 @@ For this project, I have chosen to implement a function grapher/fractal generato
 1. Clone this repo.
 2. Make a build directory in the top level directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
-4. Run it: `./Generator`.
+4. Run it: `./Plotter`.
 
 ## Capstone Project Fulfilled Requirements
 
-Requirements for the capstone project. Completed around 14/22 requirements.
+Requirements for the capstone project.
 
-### Loops, Functions, I/O COMPLETELY DONE
+### Loops, Functions, I/O COMPLETELY DONE 3/3
 
 * 1. The project demonstrates an understanding of C++ functions and control structures. DONE
     * A variety of control structures are used in the project.
@@ -53,7 +53,7 @@ Requirements for the capstone project. Completed around 14/22 requirements.
     * The project accepts input from a user as part of the necessary operation of the program.
     * User can specify a function/fractal to be graphed, when the program is started (main.cpp)
 
-### Object Oriented Programming MAINLY DONE
+### Object Oriented Programming MAINLY DONE 4/9
 
 * 1. The project uses Object Oriented Programming techniques. DONE
 	* The project code is organized into classes with class attributes to hold the data, and class methods to perform tasks.
@@ -87,7 +87,7 @@ Requirements for the capstone project. Completed around 14/22 requirements.
 * 9. Templates generalize functions in the project. NOT DONE
 	* One function is declared with a template that allows it to accept a generic parameter.
 
-### Memory Management PARTLY DONE
+### Memory Management PARTLY DONE 2/6
 
 * 1. The project makes use of references in function declarations. DONE
 	* At least two variables are defined as references, or two functions use pass-by-reference in the project code.
@@ -108,7 +108,7 @@ Requirements for the capstone project. Completed around 14/22 requirements.
 * 6. The project uses smart pointers instead of raw pointers. NOT DONE
 	* The project uses at least one smart pointer: unique_ptr, shared_ptr, or weak_ptr. The project does not use raw pointers.
 
-### Concurrency PARTIALLY DONE
+### Concurrency PARTIALLY DONE 1/4
 
 * 1. The project uses multithreading. DONE
 	* The project uses multiple threads in the execution.
