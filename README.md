@@ -7,8 +7,6 @@ Cloned from https://github.com/Udacity/CppND-Capstone-Hello-World starter code p
 ## Overview of Project
 For this project, I have chosen to implement a function grapher/fractal generator. It will take input from the console, and then open up a gnuplot window to show the function/fractal.
 
-## Project Structure
-
 
 ## Dependencies for Running Locally
 * cmake >= 3.7

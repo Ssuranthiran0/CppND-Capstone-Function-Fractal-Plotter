@@ -25,7 +25,7 @@ void Plotter::plotData(){
     std::ofstream cmdfile;
     cmdfile.open(_commandsfilename); // open file
     //cmdfile << "plot " + _datafilename + " w lp\n"; // plot data.txt
-    cmdfile << "plot 'data.txt' w lp\n"; // plot data.txt
+    cmdfile << "plot '" + _datafilename + "' w lp\n"; // plot data.txt
     cmdfile << "pause -1\n";
     cmdfile.close();
     system(("gnuplot --persist " + _commandsfilename).c_str());

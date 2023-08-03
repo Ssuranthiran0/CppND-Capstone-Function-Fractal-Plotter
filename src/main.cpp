@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "plotter.h"
+#include "generator.h"
 
 std::function<float(float)> getFunction(std::string text){
     if(text == "sin"){
@@ -69,20 +70,20 @@ std::vector<std::vector<float>> generateFunctionDataWithInput(){
     return Plotter::generatePoints(functionToBePlotted, start, end, step);
 }
 std::vector<std::vector<float>> generateFractalDataWithInput(){
-    
-
-
-    // Adding inputs to the network
-    return Plotter::generatePoints(functionToBePlotted, start, end, step);
+    int fract;
+    std::cout << "Enter a number that corresponds to a fractal. Mandelbrot Set(0), Julia Set(1), Sierpinski Triangle(2), Koch Snowflake(3), ";
+    std::cin >> fract;
+    Generator gen;
+    return {};
 }
 std::vector<std::vector<float>> generateDataWithInput(){
     int answer;
     std::cout << "Enter 0 to generate a fractal, enter 1 to generate a regular function: ";
     std::cin >> answer;
     if(answer == 1){
-        generateFunctionDataWithInput();
+        return generateFunctionDataWithInput();
     }else{
-        generateFractalDataWithInput();
+        return generateFractalDataWithInput();
     }
 }
 

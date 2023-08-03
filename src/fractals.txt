@@ -1,0 +1,40 @@
+NOTE: using std::vector<float> instead of std::complex and std::pair<float> because i coded the plotter to work with these, and I am more familiar with std::vector
+I do not want to attempt to use something that I dont fully know/understand
+
+
+MANDLEBROT SET
+
+The mandlebrot set is a recursive set defined as this z -> z^2 + C, where z is a complex number a + bi (where i^2 = -1), and C is a complex number.
+This is repeated for the max_iterations and for every complex number C (in the domain). If C diverges to infinity (or some insane value), then it is not a part of the set
+If C stays near 0, it is a part of the set, and is added to the point array; Info from: https://fractaltodesktop.com/mandelbrot-set-basics/index.html
+z^2 = (a+bi)^2 = a^2 + (2ab)i + b^2 * i^2 = (a^2-b^2) + (2ab)i. 
+
+
+
+
+JULIA SET
+
+The julia set is very similar to the mandlebrot set, with a similar equation z -> z^2 + C, where z is a complex number a + bi, and C is a complex number.
+In the julia set however, C is a constant. This equation is applied to all points. If each points, after a set amount of iterations of f(z), leaves the escape radius,
+a set value chosen in reference to C, that point is not a part of the Julia set, and will not be plotted. 
+Info from: https://en.wikipedia.org/wiki/Julia_set
+
+
+
+SIERPINSKI TRIANGLE
+
+The sierpinski triangle is a fractal that can be formed in many ways. One way is a method of removing triangles. Start with an equilateral triangle,
+then subdivide it evenly into 4 triangle, like this: (i apologise if the triangles are not exactly congruent(doing this by hand))
+     /\                 /\
+    /  \               /  \
+   /    \             /____\
+  /      \    ->     /\    /\
+ /        \         /  \  /  \
+/__________\       /____\/____\
+Remove the center triangle and recursively repeat this process for the 3 outer triangles, for as many steps as necessary.
+Another way to do this is through the chaos game. Make three points (for the three corners of the triangle). Randomly select 2 points that are not
+already 'connected' and draw a point in the midpoint of that point. As you repeat this random plotting of midpoints, it will eventually form the
+sierpinski triangle. This is the way that I am going to implement it. 
+Info from: https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle
+Chaos Game: https://en.wikipedia.org/wiki/Chaos_game
+Chaos Game Demonstration(not me): https://www.youtube.com/watch?v=Fgu5-3ihVVI
