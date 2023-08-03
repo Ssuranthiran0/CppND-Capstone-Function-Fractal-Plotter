@@ -89,7 +89,7 @@ std::vector<std::vector<float>> Choose::generateFunctionDataWithInput(){
 }
 std::vector<std::vector<float>> Choose::generateFractalDataWithInput(){
     int fract;
-    std::cout << "Enter a number that corresponds to a fractal. Mandelbrot Set(0), Julia Set(1), Sierpinski Triangle(2), Koch Snowflake(3), ";
+    std::cout << "Enter a number that corresponds to a fractal. Mandelbrot Set(0), Julia Set(1), Sierpinski Triangle(2), Koch Snowflake(3), Barnsley Fern(4): ";
     std::cin >> fract;
     return generateFractalDataWithInput(fract);
 }
@@ -117,7 +117,7 @@ int main(){
 
     // Testing function, generate any fractal directly with input for values (skip the function step)
     Choose chooser = Choose();
-    std::thread t(&Plotter::plot, chooser.getPlotter(), chooser.generateDataWithInput(), true);
+    std::thread t(&Plotter::plot, chooser.getPlotter(), chooser.generateDataWithInput(), chooser.getScatter());
     
     t.join(); // wait for thread to terminate (wait for user to close the plotting window)
     return 0;

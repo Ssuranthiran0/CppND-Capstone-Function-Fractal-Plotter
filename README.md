@@ -85,12 +85,12 @@ Requirements for the capstone project.
 * 9. Templates generalize functions in the project. NOT DONE
 	* One function is declared with a template that allows it to accept a generic parameter.
 
-### Memory Management PARTLY DONE 2/6
+### Memory Management PARTLY DONE 3/6
 
 * 1. The project makes use of references in function declarations. DONE
 	* At least two variables are defined as references, or two functions use pass-by-reference in the project code.
 
-* 2. The project uses destructors appropriately. NOT DONE (Smart ptrs)
+* 2. The project uses destructors appropriately. MAYBE DONE (only smart pointers, so no dtor)
 	* At least one class that uses unmanaged dynamically allocated memory, along with any class that otherwise needs to modify state upon the termination of an object, uses a destructor.
 
 * 3. The project uses scope / Resource Acquisition Is Initialization (RAII) where appropriate. ? NOT DONE
@@ -100,13 +100,13 @@ Requirements for the capstone project.
   * For all classes, if any one of the copy constructor, copy assignment operator, move constructor, move assignment operator, and destructor are defined, then all of these functions are defined.
   * Implemented in all classes
 
-* 5. The project uses move semantics to move data, instead of copying it, where possible. NOT DONE
+* 5. The project uses move semantics to move data, instead of copying it, where possible. ?DONE?
 	* For classes with move constructors, the project returns objects of that class by value, and relies on the move constructor, instead of copying the object.
 
-* 6. The project uses smart pointers instead of raw pointers. NOT DONE
+* 6. The project uses smart pointers instead of raw pointers. DONE
 	* The project uses at least one smart pointer: unique_ptr, shared_ptr, or weak_ptr. The project does not use raw pointers.
 
-### Concurrency PARTIALLY DONE 1/4
+### Concurrency Mainly DONE 3/4
 
 * 1. The project uses multithreading. DONE
 	* The project uses multiple threads in the execution.
@@ -115,8 +115,8 @@ Requirements for the capstone project.
 * 2. A promise and future is used in the project. NOT DONE
 	* A promise and future is used to pass data from a worker thread to a parent thread in the project code.
 
-* 3. A mutex or lock is used in the project. NOT DONE
+* 3. A mutex or lock is used in the project. DONE Generator.cpp
 	* A mutex or lock (e.g. std::lock_guard or `std::unique_lock) is used to protect data that is shared across multiple threads in the project code.
 
-* 4. A condition variable is used in the project. NOT DONE
+* 4. A condition variable is used in the project. Generator.cpp
 	* A std::condition_variable is used in the project code to synchronize thread execution.

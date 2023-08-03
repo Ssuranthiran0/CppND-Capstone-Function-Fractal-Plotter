@@ -10,12 +10,11 @@ void Plotter::plot(std::vector<std::vector<float>> data, bool scatter){
 }
 
 void Plotter::saveData(std::vector<std::vector<float>> data){
-    _data = data;
 
     std::ofstream datafile; // output filestream
-    datafile.open(_datafilename); // open file
-    for (int i=0; i< _data.size(); i++){ // loop through all
-        datafile << _data[i][0] << " " << _data[i][1] << "\n"; // add to file
+    datafile.open("data.txt"); // open file
+    for (int i=0; i< data.size(); i++){ // loop through all
+        datafile << data[i][0] << " " << data[i][1] << "\n"; // add to file
     }
     datafile.close(); // close file
 
@@ -24,14 +23,14 @@ void Plotter::saveData(std::vector<std::vector<float>> data){
 void Plotter::plotData(bool scatter){
     std::ofstream cmdfile;
     cmdfile.open(_commandsfilename); // open file
-    if(scatter){ // scatter plot
-        cmdfile << "plot '" + _datafilename + "' lt 7\n"; // plot data.txt
+    if(!scatter){ // scatter plot
+        cmdfile << "plot 'data.txt' lt 7\n"; // plot data.txt
     }else{ // line plot
-        cmdfile << "plot '" + _datafilename + "' w lp\n"; // plot data.txt
+        cmdfile << "plot 'data.txt' lt 7 w lp\n"; // plot data.txt
     }
     cmdfile << "pause -1\n";
     cmdfile.close();
-    system(("gnuplot --persist " + _commandsfilename).c_str());
+    system("gnuplot --persist gnuplot_commands.txt");
 }
 
 // https://www.geeksforgeeks.org/passing-a-function-as-a-parameter-in-cpp for the std::function part

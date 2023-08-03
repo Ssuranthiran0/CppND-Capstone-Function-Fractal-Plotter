@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <mutex>
@@ -64,10 +66,14 @@ std::pair<std::vector<std::vector<float>>, bool> Generator::generate(int fracInd
             break;
             scatter = true;
         case 2: // Sierpinski Triangle
-            pnts = generateKoSi(1);
+            pnts = generateKoSiBa(1);
+            scatter = true;
+            break;
+        case 3:
+            pnts = generateKoSiBa(0);
             break;
         default: // Koch Snowflake
-            pnts = generateKoSi(0);
+            pnts = generateKoSiBa(2);
             break;
     }
     return {pnts, scatter};
@@ -88,7 +94,7 @@ std::vector<std::vector<float>> Generator::generateMaJu(int type){
     std::vector<float> d(2), r(2), s(2); // for user input, i like to use short names. also initialize it with a length
     int m_iter;
     float stp;
-    /*
+    
     std::cout << "Enter width of rendered fractal, will be taken as absolute value. Note: this will scale up/down the fractal to this size. (-10 -> 10) eg. 100; ";
     std::cin >> s[0];
     std::cout << "Enter height of rendered fractal, will be taken as absolute value (-10 -> 10), eg. 5.3: ";
@@ -96,14 +102,10 @@ std::vector<std::vector<float>> Generator::generateMaJu(int type){
     std::cout << "Enter the amount of iterations, more iterations = more accuracy, but multiplicatively longer to calculate: ";
     std::cin >> m_iter;
     std::cout << "Enter the step size (distance between x of points), lower step size = higher accuracy, but multiplicately longer to calculate: ";
-    std::cin >> stp;*/
+    std::cin >> stp;
     // debugging
-    float size = 0.5;
-    d = {-2, 0.47}; // domain of mandelbrot set. no need to calculate values outside of this
+    d = {-2.00, 0.47}; // domain of mandelbrot set. no need to calculate values outside of this
     r = {-1.12, 1.12}; // range of mandelbrot set.
-    s = {-size,size};
-    m_iter = 50;
-    stp = 0.01;
     switch(type){
         case 0:
             return generateMandelbrot(d, r, s, m_iter, stp);
@@ -116,44 +118,38 @@ std::vector<std::vector<float>> Generator::generateMaJu(int type){
             return generateJulia(c, d, r, s, m_iter, stp);
     }
 }
-std::vector<std::vector<float>> Generator::generateKoSi(int type){
+std::vector<std::vector<float>> Generator::generateKoSiBa(int type){
     int pointNum = type + 2; // 2 starting for Koch snowflake, 3 for sierpinski triangle.
     int d;
     std::vector<std::vector<float>> pnts(pointNum);
-    for(int i=0; i<pointNum; i++){
-        std::cout << "Enter x value for point " << i+1 << " : ";
-        std::cin >> pnts[i][0];
-        std::cout << "Enter y value for point " << i+1 << " : ";
-        std::cin >> pnts[i][1];
+    std::vector<std::vector<float>> testingPnts { {-10,0}, {10,0}, {0,10} };
+    if(type == 2){
+        pointNum = 6;
+        testingPnts = {{10,10}, {10,4}, {4,5}, {15, 3}, {17,7}, {18,0}};
     }
-    std::cout << "Enter the 'depth' of the function (how many times to do it recursively): ";
+    //testingPnts = {{10,10}, {10,4}, {4,5}, {15, 3}, {17,7}, {18,0}};
+    for(int i=0; i<pointNum; i++){/* this code doesnt work
+        float x, y;
+        std::cout << "Enter x value for point " << i+1 << " : ";
+        std::cin >> x;
+        std::cout << "Enter y value for point " << i+1 << " : ";
+        std::cin >> y;
+        pnts.push_back({x, y});*/
+    }
+    pnts = testingPnts;
+    std::cout << "Enter the 'depth' of the function (how many times to do it recursively) NOTE: Sierpinski Triangle will require a lot more depth: ";
     std::cin >> d;
     switch(type){
         case 0:
             return generateKoch(pnts, d);
-        default:
+        case 1:
             return generateSierpinski(pnts, d);
+        default:
+            return generateBarnsley(d);
     }
 
 }
 
-bool Generator::checkIfInMandlebrot(std::vector<float> c, int max_iterations, float step){
-    std::vector<float> z = {0.0,0.0};
-    int iter = 0;
-    //std::cout << "x: " << c[0] << " y: " << c[1] << " dist: " << distance(c) << "\n";
-    if(distance(c) > 4.0){ // no need to test it if it is already out
-        return false;
-    }
-    while(iter<max_iterations && distance(z) < 4.0){ // if C diverges to +/- infinity, it is not in set
-        z = squareComplex(z, c);
-        iter++;
-    }
-    if(iter >= max_iterations){ // if it made it through the loop (if c was in the set)
-        return true;
-    }else{
-        return false;
-    }
-}
 void Generator::printLoadingBar(float percent) {
     //percent *= _averageMandlebrotInRange;
     int barWidth = 50; // width of percent bar
@@ -168,46 +164,57 @@ void Generator::printLoadingBar(float percent) {
     std::cout << "] " << std::setw(3) << percent << "%\n"; // write percent
     std::cout.flush();
 }
-void Generator::checkIfInMandlebrot(float x, float y, int max_iterations, float step, std::vector<float> scale, std::vector<std::vector<float>> &points){
-    std::vector<float> c = { x, y}; // c is the starting value
-    if(checkIfInMandlebrot(c, max_iterations, step)){
-        c[0] *= scale[0];
-        c[1] *= scale[1];
 
-        std::unique_lock<std::mutex> lock(_checking); // only let one thread send/receive at a time
-
-        std::vector<std::vector<float>> tempPoints = *_messageQueue->receive(); // receive
-        tempPoints.emplace_back(c); // modify
-        _messageQueue->send(std::move(std::make_shared<std::vector<std::vector<float>>>(tempPoints))); // add c to the points
+std::vector<float> multiply(std::vector<float> vec, float p){
+    for(float &t : vec){
+        t *= p;
     }
-}
-void Generator::calculateMandelbrotThread(int i, std::vector<float> domain, std::vector<float> range, int max_iterations, float step, std::vector<float> scale, std::vector<std::vector<float>>& points, float total){
-    std::vector<float> tempRange(2);
-    tempRange[0] = range[0] * 1.0 / _maxThreads * (i+1);
-    tempRange[1] = range[1] * 1.0 / _maxThreads * (i+1);
-    std::shared_ptr<std::vector<std::vector<float>>> pointsPtr = std::make_shared<std::vector<std::vector<float>>>(points);
-    _messageQueue->send(std::move(pointsPtr));
-    for (float y=range[0]; y<=range[1]; y+=step){ // test for all b(y) for c
-        for(float x=domain[0]; x<=domain[1]; x+=step){ // and all a(x) for c
-            _current += step / _maxThreads;
-            {
-                std::unique_lock<std::mutex> lock(_coutMutex);
-                printLoadingBar(_current/total);
-            }
-            checkIfInMandlebrot(x, y, max_iterations, step, scale, points);
-        }   
-    }
+    return vec;
 }
 
 std::vector<std::vector<float>> Generator::generateMandelbrot(std::vector<float> domain, std::vector<float> range, std::vector<float> size, int max_iterations, float step){
     std::vector<std::vector<float>> points; // representing a complex number as just the actual values (just a and b, not i);
     _current = 0;
     _total = (domain[1]-domain[0]) * (range[1]-range[0]);
+
     std::vector<float> scale = {(domain[1]-domain[0])/std::abs(size[0]), (range[1]-range[0])/std::abs(size[1])};
     std::vector<std::thread> threads;
-    for(float i=0; i<_maxThreads; i++){ // run _maxThreads amount of threads at a time
-        std::thread t(&Generator::calculateMandelbrotThread, this, i, domain, range, max_iterations, step, scale, std::ref(points), _total); // make a thread
-        threads.emplace_back(std::move(t));
+    std::shared_ptr<std::vector<std::vector<float>>> pointsPtr = std::make_shared<std::vector<std::vector<float>>>();
+    int threadsNum = std::min(_maxThreads, static_cast<int>((range[1] - range[0]) / step)); // dont split one singular step into multiple threads
+
+    _messageQueue->send(std::move(pointsPtr));
+    threadsNum = 1; // for some reason, having this value be more than 1 makes it like 3000 times slower so ye.
+    for (int i = 0; i < threadsNum; i++) {
+        std::vector<float> newDomain = multiply(domain, static_cast<float>(i+1)/threadsNum);
+        std::vector<float> newRange = multiply(range, static_cast<float>(i+1)/threadsNum);
+        threads.push_back(std::thread([this, &points, i, threadsNum, step, max_iterations, scale, newDomain, newRange]() {
+            for (float y=newRange[0]; y<=newRange[1]; y+=step){ // test for all b(y) for c
+                for(float x=newDomain[0]; x<=newDomain[1]; x+=step){ // and all a(x) for c
+                    _current += step / threadsNum;
+                    {
+                        std::unique_lock<std::mutex> lock(_coutMutex);
+                        printLoadingBar(_current/_total);
+                    }
+                    std::vector<float> c = { x, y}; // c is the starting value
+                    std::vector<float> z = {0.0,0.0};
+                    int iter = 0;
+                    while(iter<max_iterations || distance(z) < 4.0 || distance(c) < 4.0){ // if C diverges to +/- infinity, it is not in set
+                        z = squareComplex(z, c);
+                        iter++;
+                    }
+                    if(iter >= max_iterations){
+                        c[0] *= scale[0];
+                        c[1] *= scale[1];
+
+                        std::unique_lock<std::mutex> lock(_checking); // only let one thread send/receive at a time
+
+                        std::vector<std::vector<float>> tempPoints = *_messageQueue->receive(); // receive
+                        tempPoints.emplace_back(c); // modify
+                        _messageQueue->send(std::move(std::make_shared<std::vector<std::vector<float>>>(tempPoints))); // add c to the points
+                    }
+                }
+            }  
+        }));
     }
     for (std::thread& t : threads) { // for every thread
         if (t.joinable()) { // if can join
@@ -218,23 +225,104 @@ std::vector<std::vector<float>> Generator::generateMandelbrot(std::vector<float>
     return points;
 }
 
-std::vector<std::vector<float>> Generator::generateJulia(const std::vector<float>& c, std::vector<float> domain, std::vector<float> range, std::vector<float> size, int max_iterations, float step){
-    return {};
+std::vector<std::vector<float>> Generator::generateJulia(std::vector<float> c, std::vector<float> domain, std::vector<float> range, std::vector<float> size, int max_iterations, float step){
+    // kinda the same as mandlebrot but not rlly
+    std::vector<std::vector<float>> points; // representing a complex number as just the actual values (just a and b, not i);
+    _current = 0;
+    _total = (domain[1]-domain[0]) * (range[1]-range[0]);
+    for(float y=range[0]; y<=range[1]; y+=step){ // test for all y
+        for(float x=domain[0]; x<=domain[1]; x+=step){ // test for all x
+            _current += step; // printing
+            printLoadingBar(_current / _total); // progress bar
+            std::vector<float> z {x, y}; // test x + yi
+            int iter = 0;
+            while(distance(z) < 4 || iter < max_iterations){
+                z = squareComplex(z, c); // z^2 + c
+                iter++;
+            }
+            if(iter >= max_iterations){
+                points.push_back({x,y}); // add starting value to points vectr
+            }
+        }
+    }
+    std::vector<float> scale = {(domain[1]-domain[0])/std::abs(size[0]), (range[1]-range[0])/std::abs(size[1])};
+
+    return points;
 }
 
-std::vector<std::vector<float>> Generator::generateSierpinski (std::vector<std::vector<float>>& points, int depth){ // method though the chaos game
-    //https://stackoverflow.com/questions/6926433/how-to-shuffle-a-stdvector
-    if(depth > 0){
-        std::shuffle(std::begin(points), std::end(points), std::default_random_engine()); // shuffle vector
-        std::vector<float> &start = points[0]; // start point
-        std::vector<float> &end = points[1]; // end point
-        std::vector<float> midpoint = {(end[0]-start[0])/2, (end[1]-start[1])/2};
-        points.emplace_back(midpoint);
-        return generateSierpinski(points, depth - 1); // do it recursively
+
+std::vector<std::vector<float>> Generator::generateSierpinski(std::vector<std::vector<float>> &points, int depth) {
+    std::vector<float> currentPoint = points[rand() % 3];
+    int startDepth = depth;
+    Plotter().saveData(points);
+    while (depth > 0) {
+        printLoadingBar(float(startDepth-depth) * 100 / float(startDepth));
+        std::vector<float> toPoint = points[rand() % 3];
+        currentPoint = { (currentPoint[0] + toPoint[0]) / 2, (currentPoint[1] + toPoint[1]) / 2};
+        points.emplace_back(currentPoint);
+        depth -= 1;
     }
     return points;
 }
 
-std::vector<std::vector<float>> Generator::generateKoch (std::vector<std::vector<float>>& points, int depth){
-    return {};
+std::vector<float> add(std::vector<float> a, std::vector<float> b, float factor){
+    return { factor * (a[0] + b[0]), factor * (a[1]+b[1])};
+}
+std::vector<float> subtract(std::vector<float> a, std::vector<float> b, float factor){
+    return { factor * (-a[0] + b[0]), factor * (-a[1]+b[1])};
+}
+std::vector<std::vector<float>> Generator::generateBarnsley(int depth){
+    // https://en.wikipedia.org/wiki/Barnsley_fern
+    float x = 0.0; // u can play around with these values
+    float y = 0.0;
+    std::vector<std::vector<float>> points;
+    for(float i=0; i<depth; i++){
+        printLoadingBar(i/float(depth));
+        float r = float(rand()) / float(RAND_MAX);
+        if (r < 0.1){
+        x = 0.0;
+        y = 0.16 * y;
+        }else if (r < 0.86){
+            x = 0.85 * x + 0.04 * y;
+            y = -0.04 * x + 0.85 * y + 1.6;
+        }else if (r < 0.93){
+            x = 0.2 * x - 0.26 * y;
+            y = 0.23 * x + 0.22 * y + 1.6;
+        }else{
+            x = -0.15 * x + 0.22 * y;
+            y = 0.26 * x + 0.24 * y + 0.44;
+        }
+        points.push_back({x, y});
+    }
+    return points;
+
+}
+std::vector<std::vector<float>> Generator::generateKoch(std::vector<std::vector<float>>& points, int depth) { // BROKEN
+    if(depth <= 0){
+        return points;
+    }
+
+    std::vector<std::vector<float>> newPoints;
+        
+    for (int i = 0; i < points.size(); ++i) {
+        std::vector<float>& p1 = points[i];
+        std::vector<float>& p2 = points[(i + 1) % points.size()];
+        
+        
+        // Calculate the distance between the two points
+        float dist = std::sqrt(distance({(p1[0] - p2[0]), (p1[1] - p2[1])}));
+        
+        // Calculate the coordinates of the three new points. Got these values from somewhere, I do not remember that website.
+        std::vector<float> new1 = { (2 * p1[0] + p2[0])/3, (2 * p1[1] + p2[1])/3};
+        std::vector<float> new2 = { static_cast<float>((p1[0] + p2[0]) / 2 + (p2[1] - p1[1]) * std::sqrt(3) / 6), static_cast<float>((p1[1] + p2[1]) / 2 + (p1[0] - p2[0]) * std::sqrt(3) / 6) };
+        std::vector<float> new3 = { (p1[0] + 2 * p2[0]) / 3, (p1[1] + 2 * p2[1]) / 3 };
+
+        // Add the new points to the newPoints vector
+        newPoints.push_back(new1);
+        newPoints.push_back(new2);
+        newPoints.push_back(new3);
+    }
+    
+    // Recursively generate the fractal with reduced depth
+    return generateKoch(newPoints, depth - 1);
 }

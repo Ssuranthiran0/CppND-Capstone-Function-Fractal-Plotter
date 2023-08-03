@@ -29,6 +29,8 @@ JULIA SET
 The julia set is very similar to the mandlebrot set, with a similar equation z -> z^2 + C, where z is a complex number a + bi, and C is a complex number.
 In the julia set however, C is a constant. This equation is applied to all points. If each points, after a set amount of iterations of f(z), leaves the escape radius,
 a set value chosen in reference to C, that point is not a part of the Julia set, and will not be plotted. 
+Whearas the mandelbrot set takes z=0 to be the startin value and tests it for every starting value of C, the julia set takes c as a constant,
+and tests it for every starting value of z.
 Info from: https://en.wikipedia.org/wiki/Julia_set
 
 
@@ -44,9 +46,9 @@ then subdivide it evenly into 4 triangle, like this: (i apologise if the triangl
  /        \         /  \  /  \
 /__________\       /____\/____\
 Remove the center triangle and recursively repeat this process for the 3 outer triangles, for as many steps as necessary.
-Another way to do this is through the chaos game. Make three points (for the three corners of the triangle). Randomly select 2 points that are not
-already 'connected' and draw a point in the midpoint of that point. As you repeat this random plotting of midpoints, it will eventually form the
-sierpinski triangle. This is the way that I am going to implement it. 
+Another way to do this is through the chaos game. Make three points (for the three corners of the triangle). Choose any random point,
+inside or outside the triangle, pick any of the existing points. Then draw the midpoint of these two points, and then continue this process from the midpoint,
+drawing the midpoint of the current point (old midpoint) and a random point. As this process continues, it forms the sierpinski triangle.
 Info from: https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle
 Chaos Game: https://en.wikipedia.org/wiki/Chaos_game
 Chaos Game Demonstration(not me): https://www.youtube.com/watch?v=Fgu5-3ihVVI
@@ -56,3 +58,14 @@ Chaos Game Explanation(numberphile): https://www.youtube.com/watch?v=kbKtFN71Lfs
 
 
 KOCH SNOWFLAKE
+https://en.wikipedia.org/wiki/Koch_Snowflake
+kinda boring to explain so
+
+BARNSLEY FERN
+
+The barnsley ferm is a fractal that looks a lot like a fern. The method of creating it is very similar to the chaos game for sierpinski triangles.
+You have two triangles, and perform a set of transformations based on random chance to generate the fern. (loop for max_iterations). There is
+a 10% chance for it to add a new point (0, 1.16 * prev_y),  a 76% chance to add a new point (0.85 * prev_x + 0.04 * prev_y, -0.04 * prev_x + 0.85 * prev_y + 1.6)
+7%: (0.2prevx - 0.26prevy, 0.23prevx + 0.22prevy + 1.6)
+and a 7% chance of (-0.15 * x + 0.22 * y, 0.26 * x + 0.24 * y + 0.44)
+SOURCE: https://en.wikipedia.org/wiki/Barnsley_fern
