@@ -1,23 +1,73 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
+#include <condition_variable>
+#include <deque>
 #include <functional>
+#include <mutex>
 #include <thread>
 #include <vector>
 
 #include "plotter.h"
 
+
+
+// message queue taken from concurrent traffic simulation udacity project
+// make a mutex so that you can calculate multiple fractal points at the same time
+template <typename T>
+class MessageQueue{
+    public:
+        T receive();
+        void send(T &&msg);
+        std::unique_lock<std::mutex> getLock();
+    private:
+        std::deque<T> _queue;
+        std::mutex _mutex;
+        std::condition_variable _cond;
+};
+
+
 class Generator{
     public:
-        std::vector<std::vector<float>> generate (int fracIndex);
+        Generator();
+        std::pair<std::vector<std::vector<float>>, bool> generate (int fracIndex);
     private:
-        std::vector<float> squareComplex (std::vector<float> complex, std::vector<float> addend={});
-        std::vector<std::vector<float>> generateMandelbrot(std::vector<float> domain, std::vector<float> range, std::vector<int> size, int max_iterations);
-        std::vector<std::vector<float>> generateJulia (const std::vector<float>& constant, std::vector<float> domain, std::vector<float> range, std::vector<int> size, int max_iterations);
-        std::vector<std::vector<float>> generateSierpinski (std::vector<float>& points, int depth, std::vector<std::vector<float>> startingPoints);
-        std::vector<std::vector<float>> generateKoch (std::vector<float>& points, int depth, std::vector<std::vector<float>> startingPoints);
-        std::vector<std::vector<float>> generateMaJu (bool type); // generate mandelbrot/julia. very similar
-        std::vector<std::vector<float>> generateKoSi (bool type); // generate koch/sierpinski
+        // helper functions for working with complex numbers
+        std::vector<float> squareComplex (std::vector<float> complex, std::vector<float> addend={}); // return (a+bi)^2 + addend.
+        float distance (std::vector<float> complex); // get absolute magnitude of complex number. for me, its the distance to zero, so i named it as such
+
+        bool checkIfInMandlebrot(std::vector<float> c, int max_iterations, float step);
+        void checkIfInMandlebrot(float x, float y, int max_iterations, float step, std::vector<float> scale, std::vector<std::vector<float>> &points);
+        void calculateMandelbrotThread(
+            int i, std::vector<float> domain, std::vector<float> range, int max_iterations, float step, std::vector<float> scale, std::vector<std::vector<float>>& points, float total
+        );
+        std::vector<std::vector<float>> generateMandelbrot(
+            std::vector<float> domain, std::vector<float> range, std::vector<float> size, int max_iterations, float step=0.5
+        );
+
+        std::vector<std::vector<float>> generateJulia (
+            const std::vector<float>& c, std::vector<float> domain, std::vector<float> range, std::vector<float> size, int max_iterations, float step=0.5
+        );
+
+        std::vector<std::vector<float>> generateSierpinski (
+            std::vector<std::vector<float>>& points, int depth // recursively call the function on points array depth amount of times, then return points
+        );
+
+        std::vector<std::vector<float>> generateKoch (
+            std::vector<std::vector<float>>& points, int depth // recursively call the function on points array depth amount of times, then return points
+        );
+        std::vector<std::vector<float>> generateMaJu (int type); // generate mandelbrot/julia. very similar
+        std::vector<std::vector<float>> generateKoSi (int type); // generate koch/sierpinski
+
+
+        // thread stuff
+        int _maxThreads = 256;
+        std::shared_ptr<MessageQueue<std::shared_ptr<std::vector<std::vector<float>>>>> _messageQueue;
+        void printLoadingBar(float percent);
+        std::mutex _coutMutex;
+        float _current;
+        float _total;
+        std::mutex _checking;
 
 };
 #endif

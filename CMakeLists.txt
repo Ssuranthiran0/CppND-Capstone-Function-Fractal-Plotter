@@ -8,6 +8,7 @@ set(CMAKE_CXX_FLAGS, "${CXX_FLAGS}")
 
 project(Plotter)
 add_executable(Plotter
-    src/main.cpp
+    src/choose.cpp
     src/plotter.cpp
+    src/generator.cpp
 )

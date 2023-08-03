@@ -7,11 +7,29 @@
 #include <stdexcept>
 #include <string>
 #include <thread>
+#include <utility>
 
+#include "choose.h"
 #include "plotter.h"
-#include "generator.h"
 
-std::function<float(float)> getFunction(std::string text){
+Choose::Choose(){
+    _plot = std::make_unique<Plotter>();
+    _gen = std::make_unique<Generator>();
+}
+Plotter Choose::getPlotter(){
+    return *_plot;
+}
+Generator& Choose::getGen(){
+    return *_gen;
+}
+bool Choose::getScatter(){
+    return _scatter;
+}
+void Choose::setScanner(bool s){
+    _scatter = s;
+}
+
+std::function<float(float)> Choose::getFunction(std::string text){ // cant use switch case with strings
     if(text == "sin"){
         return sin;
     }
@@ -42,14 +60,14 @@ std::function<float(float)> getFunction(std::string text){
     return nullptr;
 }
 
-std::vector<std::vector<float>> generateFunctionDataWithInput(){
-    std::string functionString;
-    std::function<float(float)> functionToBePlotted;
+std::vector<std::vector<float>> Choose::generateFunctionDataWithInput(){
+    std::string f;
+    std::function<float(float)> funct;
     while(true){
         std::cout << "Enter a function to be plotted/trained. Note, plotting just connect points, so some 'step' functions, like ceil and floor, will show as being a line. Accepted functions (sin, cos, tan, log (ln), sqrt, exp, abs, floor, ceil): ";
-        std::cin >> functionString;
-        functionToBePlotted = getFunction(functionString);
-        if(functionToBePlotted == nullptr){
+        std::cin >> f;
+        funct = getFunction(f);
+        if(funct == nullptr){
             std::cout << "Invalid function. Try again.\n";
         }else{
             break;
@@ -67,16 +85,23 @@ std::vector<std::vector<float>> generateFunctionDataWithInput(){
 
 
     // Adding inputs to the network
-    return Plotter::generatePoints(functionToBePlotted, start, end, step);
+    return Plotter::generatePoints(funct, start, end, step);
 }
-std::vector<std::vector<float>> generateFractalDataWithInput(){
+std::vector<std::vector<float>> Choose::generateFractalDataWithInput(){
     int fract;
     std::cout << "Enter a number that corresponds to a fractal. Mandelbrot Set(0), Julia Set(1), Sierpinski Triangle(2), Koch Snowflake(3), ";
     std::cin >> fract;
-    Generator gen;
-    return {};
+    return generateFractalDataWithInput(fract);
 }
-std::vector<std::vector<float>> generateDataWithInput(){
+std::vector<std::vector<float>> Choose::setValues(std::pair<std::vector<std::vector<float>>, bool> out){
+    _scatter = out.second;
+    return out.first;
+}
+std::vector<std::vector<float>> Choose::generateFractalDataWithInput(int index){
+    Generator gen;
+    return setValues(gen.generate(index));
+}
+std::vector<std::vector<float>> Choose::generateDataWithInput(){
     int answer;
     std::cout << "Enter 0 to generate a fractal, enter 1 to generate a regular function: ";
     std::cin >> answer;
@@ -88,8 +113,11 @@ std::vector<std::vector<float>> generateDataWithInput(){
 }
 
 int main(){
+    std::cout << "Please note that entering invalid input (entering text instead of numbers, etc) for MOST questions will result in either a crash, or failure to render the function. \n";
 
-    std::thread t(&Plotter::plot, Plotter(), generateDataWithInput());
+    // Testing function, generate any fractal directly with input for values (skip the function step)
+    Choose chooser = Choose();
+    std::thread t(&Plotter::plot, chooser.getPlotter(), chooser.generateDataWithInput(), true);
     
     t.join(); // wait for thread to terminate (wait for user to close the plotting window)
     return 0;

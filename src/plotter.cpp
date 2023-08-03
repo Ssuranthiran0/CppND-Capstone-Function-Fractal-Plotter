@@ -4,9 +4,9 @@
 #include <iostream>
 #include <fstream>
 
-void Plotter::plot(std::vector<std::vector<float>> data){
+void Plotter::plot(std::vector<std::vector<float>> data, bool scatter){
     saveData(data); // save
-    plotData(); // plot
+    plotData(scatter); // plot
 }
 
 void Plotter::saveData(std::vector<std::vector<float>> data){
@@ -21,11 +21,14 @@ void Plotter::saveData(std::vector<std::vector<float>> data){
 
 }
 
-void Plotter::plotData(){
+void Plotter::plotData(bool scatter){
     std::ofstream cmdfile;
     cmdfile.open(_commandsfilename); // open file
-    //cmdfile << "plot " + _datafilename + " w lp\n"; // plot data.txt
-    cmdfile << "plot '" + _datafilename + "' w lp\n"; // plot data.txt
+    if(scatter){ // scatter plot
+        cmdfile << "plot '" + _datafilename + "' lt 7\n"; // plot data.txt
+    }else{ // line plot
+        cmdfile << "plot '" + _datafilename + "' w lp\n"; // plot data.txt
+    }
     cmdfile << "pause -1\n";
     cmdfile.close();
     system(("gnuplot --persist " + _commandsfilename).c_str());

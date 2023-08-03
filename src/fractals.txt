@@ -4,9 +4,21 @@ I do not want to attempt to use something that I dont fully know/understand
 
 MANDLEBROT SET
 
-The mandlebrot set is a recursive set defined as this z -> z^2 + C, where z is a complex number a + bi (where i^2 = -1), and C is a complex number.
-This is repeated for the max_iterations and for every complex number C (in the domain). If C diverges to infinity (or some insane value), then it is not a part of the set
-If C stays near 0, it is a part of the set, and is added to the point array; Info from: https://fractaltodesktop.com/mandelbrot-set-basics/index.html
+The mandlebrot set is a recursive set defined as  z -> z^2 + C, where z is a complex number a + bi (where i^2 = -1), and C is a complex number.
+Z starts at 0 and this recursive function is repeated for the max_iterations and for every complex number C (in the domain). If C diverges to infinity 
+(or some insane value), then it is not a part of the set. If C stays near 0, it is a part of the set, and is added to the point array. If z ever goes outside
+a circle of radius 2, it is not a part of the set. (a^2+b^2 > 4), as it will continue to increase (lim n->infinity r^n = infinity (r>1) but for complex).
+Therefore, for a set amount of iterations (more = more accuracy), if z ever goes out of the circle, C is not a part of the set.
+C = complex
+z = 0
+repeat 4:
+    z = z^2 + C
+    if(a^2+b^2>2): // out of circle
+        return false // not in set
+return true // if it finished all iterations in the circle, it is in the set
+
+
+Info from: https://fractaltodesktop.com/mandelbrot-set-basics/index.html
 z^2 = (a+bi)^2 = a^2 + (2ab)i + b^2 * i^2 = (a^2-b^2) + (2ab)i. 
 
 
@@ -38,3 +50,9 @@ sierpinski triangle. This is the way that I am going to implement it.
 Info from: https://en.wikipedia.org/wiki/Sierpi%C5%84ski_triangle
 Chaos Game: https://en.wikipedia.org/wiki/Chaos_game
 Chaos Game Demonstration(not me): https://www.youtube.com/watch?v=Fgu5-3ihVVI
+Chaos Game Explanation(numberphile): https://www.youtube.com/watch?v=kbKtFN71Lfs
+
+
+
+
+KOCH SNOWFLAKE
