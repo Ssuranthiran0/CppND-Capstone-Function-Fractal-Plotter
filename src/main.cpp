@@ -41,7 +41,7 @@ std::function<float(float)> getFunction(std::string text){
     return nullptr;
 }
 
-std::vector<std::vector<float>> generateDataWithInput(){
+std::vector<std::vector<float>> generateFunctionDataWithInput(){
     std::string functionString;
     std::function<float(float)> functionToBePlotted;
     while(true){
@@ -68,27 +68,27 @@ std::vector<std::vector<float>> generateDataWithInput(){
     // Adding inputs to the network
     return Plotter::generatePoints(functionToBePlotted, start, end, step);
 }
+std::vector<std::vector<float>> generateFractalDataWithInput(){
+    
+
+
+    // Adding inputs to the network
+    return Plotter::generatePoints(functionToBePlotted, start, end, step);
+}
+std::vector<std::vector<float>> generateDataWithInput(){
+    int answer;
+    std::cout << "Enter 0 to generate a fractal, enter 1 to generate a regular function: ";
+    std::cin >> answer;
+    if(answer == 1){
+        generateFunctionDataWithInput();
+    }else{
+        generateFractalDataWithInput();
+    }
+}
 
 int main(){
 
     std::thread t(&Plotter::plot, Plotter(), generateDataWithInput());
-    /*
-    Creator creator;
-    std::vector<float> inputValues = {3,5,6,8,20};
-    creator.createNetworks(inputValues);
-    if(creator.getNetworks().size() != 0){ // only do it if creation worked
-
-        // Getting the outputs
-        std::vector<std::vector<float>> outputs = creator.getOutputs();
-
-        // Printing the outputs
-        for (int i = 0; i < outputs.size(); i++) {
-            for(int j = 0; j < outputs[i].size(); j++)  {
-                creator.getNetwork(i)->printStructure();
-                std::cout << "Output: " << outputs[i][j] << std::endl;
-            }
-        }
-    }*/
     
     t.join(); // wait for thread to terminate (wait for user to close the plotting window)
     return 0;
