@@ -24,6 +24,7 @@ For this project, I have chosen to implement a function grapher/fractal generato
   * Link includes exe, zip, and 7z files for Windows and a tar.gz file for all OSes.
   * Linux
     * Arch Linux: [Arch package link](https://archlinux.org/packages/extra/x86_64/gnuplot/) Command: sudo pacman -Syu gnuplot
+    * Debian-based(eg. Ubuntu): Command: sudo apt install gnuplot
   * To test installation, open a terminal window and type 'gnuplot' into the window and press enter. If it opens gnuplot (in the terminal), then the program will run properly.
 
 
