@@ -5,7 +5,7 @@ This is my capstone project for the [Udacity C++ Nanodegree Program](https://www
 Cloned from https://github.com/Udacity/CppND-Capstone-Hello-World starter code provided by Udacity.
 
 ## Overview of Project
-For this project, I have chosen to implement a function grapher/fractal generator. It will take input from the console, and then open up a gnuplot window to show the function/fractal.
+For this project, I have chosen to implement a function grapher/fractal generator. It will take input from the console, and then open up a gnuplot window to show the function/fractal. Note: Originally I had heavily over-scoped the project, to be a neural network that tries to predict the function, but that ended up being quite difficult to do ( I ended up with a mountain of annoying bugs that I was not willing to fix ) so I cut down the scope of the project to just include some rendering and fractal generation. As such, some elements in this readme may not reflect this change, and include things that are not in the current version of this code, like main.cpp, and anything network/node related.
 
 
 ## Dependencies for Running Locally
