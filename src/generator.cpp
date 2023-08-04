@@ -101,7 +101,7 @@ std::vector<std::vector<float>> Generator::generateMaJu(int type){
     std::cin >> s[1];
     std::cout << "Enter the amount of iterations, more iterations = more accuracy, but multiplicatively longer to calculate: ";
     std::cin >> m_iter;
-    std::cout << "Enter the step size (distance between x of points), lower step size = higher accuracy, but multiplicately longer to calculate: ";
+    std::cout << "Enter the step size (distance between x of points), for some fractals, a low value is required. A recommended value is around 0.1 or 0.01. Lower step size = higher accuracy, but multiplicately longer to calculate: ";
     std::cin >> stp;
     // debugging
     d = {-2.00, 0.47}; // domain of mandelbrot set. no need to calculate values outside of this
@@ -178,50 +178,29 @@ std::vector<std::vector<float>> Generator::generateMandelbrot(std::vector<float>
     _total = (domain[1]-domain[0]) * (range[1]-range[0]);
 
     std::vector<float> scale = {(domain[1]-domain[0])/std::abs(size[0]), (range[1]-range[0])/std::abs(size[1])};
-    std::vector<std::thread> threads;
-    std::shared_ptr<std::vector<std::vector<float>>> pointsPtr = std::make_shared<std::vector<std::vector<float>>>();
-    int threadsNum = std::min(_maxThreads, static_cast<int>((range[1] - range[0]) / step)); // dont split one singular step into multiple threads
+    
+    std::vector<float> c = {0, 0}; // c is the starting value
+    std::vector<float> z = {0,0}; // share the memory for the two vectors
 
-    _messageQueue->send(std::move(pointsPtr));
-    threadsNum = 1; // for some reason, having this value be more than 1 makes it like 3000 times slower so ye.
-    for (int i = 0; i < threadsNum; i++) {
-        std::vector<float> newDomain = multiply(domain, static_cast<float>(i+1)/threadsNum);
-        std::vector<float> newRange = multiply(range, static_cast<float>(i+1)/threadsNum);
-        threads.push_back(std::thread([this, &points, i, threadsNum, step, max_iterations, scale, newDomain, newRange]() {
-            for (float y=newRange[0]; y<=newRange[1]; y+=step){ // test for all b(y) for c
-                for(float x=newDomain[0]; x<=newDomain[1]; x+=step){ // and all a(x) for c
-                    _current += step / threadsNum;
-                    {
-                        std::unique_lock<std::mutex> lock(_coutMutex);
-                        printLoadingBar(_current/_total);
-                    }
-                    std::vector<float> c = { x, y}; // c is the starting value
-                    std::vector<float> z = {0.0,0.0};
-                    int iter = 0;
-                    while(iter<max_iterations || distance(z) < 4.0 || distance(c) < 4.0){ // if C diverges to +/- infinity, it is not in set
-                        z = squareComplex(z, c);
-                        iter++;
-                    }
-                    if(iter >= max_iterations){
-                        c[0] *= scale[0];
-                        c[1] *= scale[1];
+    for (float y=range[0]; y<=range[1]; y+=step){ // test for all b(y) for c
+        for(float x=domain[0]; x<=domain[1]; x+=step){ // and all a(x) for c
+            _current += step;
+            printLoadingBar(_current/_total);
+            c = {x, y};
+            z = {0, 0};
+            int iter = 0;
+            while(iter<=max_iterations && distance(z) < 4.0 && distance(c) < 4.0){ // if C diverges to +/- infinity, it is not in set
+                z = squareComplex(z, c);
+                iter++;
+            }
+            if(iter >= max_iterations){ 
+                c[0] *= scale[0];
+                c[1] *= scale[1];
 
-                        std::unique_lock<std::mutex> lock(_checking); // only let one thread send/receive at a time
-
-                        std::vector<std::vector<float>> tempPoints = *_messageQueue->receive(); // receive
-                        tempPoints.emplace_back(c); // modify
-                        _messageQueue->send(std::move(std::make_shared<std::vector<std::vector<float>>>(tempPoints))); // add c to the points
-                    }
-                }
-            }  
-        }));
-    }
-    for (std::thread& t : threads) { // for every thread
-        if (t.joinable()) { // if can join
-            t.join(); // join thread (wait for done)
+                points.emplace_back(c); // modify
+            }
         }
     }
-    points = *_messageQueue->receive();
     return points;
 }
 
@@ -229,24 +208,33 @@ std::vector<std::vector<float>> Generator::generateJulia(std::vector<float> c, s
     // kinda the same as mandlebrot but not rlly
     std::vector<std::vector<float>> points; // representing a complex number as just the actual values (just a and b, not i);
     _current = 0;
-    _total = (domain[1]-domain[0]) * (range[1]-range[0]);
-    for(float y=range[0]; y<=range[1]; y+=step){ // test for all y
-        for(float x=domain[0]; x<=domain[1]; x+=step){ // test for all x
-            _current += step; // printing
-            printLoadingBar(_current / _total); // progress bar
-            std::vector<float> z {x, y}; // test x + yi
+    _total = (domain[1]-domain[0]) * (range[1]-range[0]) / step;
+
+    std::vector<float> scale = {(domain[1]-domain[0])/std::abs(size[0]), (range[1]-range[0])/std::abs(size[1])};
+    
+    std::vector<float> z = {0,0}; // share the memory for the two vectors
+
+    for (float y=range[0]; y<=range[1]; y+=step){ // test for all b(y) for c
+        for(float x=domain[0]; x<=domain[1]; x+=step){ // and all a(x) for c
+            _current += step;
+            std::vector<std::vector<float>> tempPoints;
+            printLoadingBar(_current / _total * 100);
+            z = {x, y};
             int iter = 0;
-            while(distance(z) < 4 || iter < max_iterations){
-                z = squareComplex(z, c); // z^2 + c
+            while(iter<=max_iterations && distance(z)){ // if C diverges to +/- infinity, it is not in set
+                z = squareComplex(z, c);
+                tempPoints.push_back( {c[0] * scale[0], c[1] * scale[1]} );
                 iter++;
             }
-            if(iter >= max_iterations){
-                points.push_back({x,y}); // add starting value to points vectr
+            if(iter >= max_iterations){ 
+                std::vector<float> pnt;
+                for(auto i : tempPoints){
+                    points.emplace_back(i);
+                }
+                //points.emplace_back(pnt); // modify
             }
         }
     }
-    std::vector<float> scale = {(domain[1]-domain[0])/std::abs(size[0]), (range[1]-range[0])/std::abs(size[1])};
-
     return points;
 }
 

@@ -117,8 +117,9 @@ int main(){
 
     // Testing function, generate any fractal directly with input for values (skip the function step)
     Choose chooser = Choose();
-    std::thread t(&Plotter::plot, chooser.getPlotter(), chooser.generateDataWithInput(), chooser.getScatter());
+    //std::thread t(&Plotter::plot, chooser.getPlotter(), chooser.generateDataWithInput(), chooser.getScatter());
+    chooser.getPlotter().plot(chooser.generateDataWithInput(), chooser.getScatter());
     
-    t.join(); // wait for thread to terminate (wait for user to close the plotting window)
+    //t.join(); // wait for thread to terminate (wait for user to close the plotting window)
     return 0;
 }   
